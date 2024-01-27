@@ -19,18 +19,13 @@ import Cocoa
     }
     
     func start() {
+        if isRunning { return }
         isRunning = true
         self.runStep()
     }
     
     func stop() {
         isRunning = false
-    }
-    
-    func runStepDelayed() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
-            self.runStep()
-        }
     }
     
     func findPid(bundleId: String) -> pid_t? {
@@ -49,9 +44,10 @@ import Cocoa
     func runStep() {
         if !isRunning { return }
         
+        let key = KeyCode.keypadMultiply
         let src = CGEventSource(stateID: .hidSystemState)
-        let down = CGEvent(keyboardEventSource: src, virtualKey: KeyCode.f11.rawValue, keyDown: true)!
-        let up = CGEvent(keyboardEventSource: src, virtualKey: KeyCode.f11.rawValue, keyDown: false)!
+        let down = CGEvent(keyboardEventSource: src, virtualKey: key.rawValue, keyDown: true)!
+        let up = CGEvent(keyboardEventSource: src, virtualKey: key.rawValue, keyDown: false)!
 
         post(event: down, bundleId: "com.nvidia.gfnpc.mall")
         post(event: down, bundleId: "com.nvidia.nvcontainer")
@@ -61,7 +57,9 @@ import Cocoa
             post(event: up, bundleId: "com.nvidia.gfnpc.mall")
             post(event: up, bundleId: "com.nvidia.nvcontainer")
         }
-        runStepDelayed()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+            self.runStep()
+        }
     }
 }
 
@@ -70,7 +68,6 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("keystroker v2")
             Text("Count: \(app.count)")
             Text(app.isRunning ? "Running": "")
             Button(action: {

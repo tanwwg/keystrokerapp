@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct keystrokerApp: App {
     var body: some Scene {
-        WindowGroup {
+        Window("Keystroker v2", id: "main") {
             ContentView()
         }
     }
